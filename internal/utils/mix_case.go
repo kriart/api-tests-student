@@ -2,6 +2,7 @@ package utils
 
 import "unicode"
 
+// MixCase чередует регистр букв Unicode, сохраняя цифры, пробелы и знаки.
 func MixCase(text string) string {
 	letters := []rune(text)
 	upper := true

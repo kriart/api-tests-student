@@ -6,12 +6,14 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"time"
 
 	"github.com/steinfletcher/apitest"
 )
 
 const (
 	defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+	requestInterval  = 200 * time.Millisecond
 )
 
 type ApiTest struct {
@@ -37,13 +39,15 @@ func (at *ApiTest) Auth(token string) *ApiTest {
 	return at
 }
 
+// Create настраивает HTTP-запросы с таймаутом и паузой для ограничения нагрузки на стенд.
 func (at *ApiTest) Create() *apitest.APITest {
-	apitestNew := apitest.New().EnableNetworking()
+	apitestNew := apitest.New().EnableNetworking(&http.Client{Timeout: 30 * time.Second})
 	if os.Getenv("DEBUG") == "true" {
 		apitestNew = apitestNew.Debug()
 	}
 	return apitestNew.
 		Intercept(func(request *http.Request) {
+			time.Sleep(requestInterval)
 			request.Header.Set("User-Agent", at.userAgent)
 
 			if err := mergeServiceUrls(at.host, request.URL); err != nil {
